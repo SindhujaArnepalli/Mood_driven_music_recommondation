@@ -15,4 +15,3 @@ public class Song {
     private String mood;
     private Double energyLevel; // 0.0 to 1.0
 }
-
