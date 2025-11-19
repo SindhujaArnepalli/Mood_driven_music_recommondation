@@ -1,6 +1,6 @@
 # Mood-Driven Music Recommendation Engine
 
-A sophisticated backend system that predicts user mood and recommends music based on multiple contextual inputs. Built with Java and Spring Boot.
+A sophisticated backend system that predicts user mood and recommends music based on multiple contextual inputs. Built with Java and Spring Boot. A lightweight browser UI lives under `src/main/resources/static` so you can test the engine without extra tooling.
 
 ## 🎯 Features
 
@@ -29,10 +29,11 @@ A sophisticated backend system that predicts user mood and recommends music base
    mvn spring-boot:run
    ```
 
-3. **The API will be available at:**
+3. **The API and demo UI will be available at:**
    ```
-   http://localhost:8080
+http://localhost:8080
    ```
+Open that URL in your browser to use the built-in interface.
 
 ## 📡 API Endpoints
 

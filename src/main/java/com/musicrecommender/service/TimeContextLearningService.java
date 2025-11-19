@@ -4,6 +4,7 @@ import com.musicrecommender.model.UserBehavior;
 import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Time-context behavior learning service
@@ -59,21 +60,22 @@ public class TimeContextLearningService {
         
         // Aggregate mood patterns
         Map<String, Integer> moodCounts = new HashMap<>();
-        int totalCount = 0;
+        AtomicInteger totalCount = new AtomicInteger();
         
         for (UserBehavior behavior : relevantBehaviors) {
             if (behavior.getMoodHistory() != null) {
                 behavior.getMoodHistory().forEach((mood, count) -> {
-                    moodCounts.put(mood.toLowerCase(), moodCounts.getOrDefault(mood.toLowerCase(), 0) + count);
-                    totalCount += count;
+                    String normalizedMood = mood.toLowerCase();
+                    moodCounts.put(normalizedMood, moodCounts.getOrDefault(normalizedMood, 0) + count);
+                    totalCount.addAndGet(count);
                 });
             }
         }
         
         // Convert to probabilities
-        if (totalCount > 0) {
+        if (totalCount.get() > 0) {
             moodCounts.forEach((mood, count) -> {
-                patterns.put(mood, (double) count / totalCount);
+                patterns.put(mood, (double) count / totalCount.get());
             });
         }
         

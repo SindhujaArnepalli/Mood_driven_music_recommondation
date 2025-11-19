@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mood Music Recommender</title>
+    <style>
+        :root {
+            font-family: "Circular Std", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #fff;
+            background-color: #050505;
+        }
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, #1db95433, #050505 45%);
+            color: inherit;
+        }
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem 4rem;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .nav h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .badge {
+            padding: 0.35rem 0.9rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.1);
+            font-size: 0.85rem;
+        }
+        .surface {
+            background: linear-gradient(145deg, rgba(22,22,22,0.95), rgba(9,9,9,0.8));
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+        .hero {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        .hero h2 {
+            font-size: 2rem;
+            margin: 0;
+        }
+        .hero p {
+            margin: 0;
+            color: #b3b3b3;
+            font-size: 1.05rem;
+        }
+        form {
+            display: grid;
+            gap: 1.5rem;
+        }
+        label {
+            font-size: 0.9rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: #b3b3b3;
+            display: block;
+            margin-bottom: 0.35rem;
+        }
+        textarea, input, button {
+            width: 100%;
+            border: none;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.05);
+            color: inherit;
+            padding: 1rem 1.1rem;
+            font-size: 1rem;
+        }
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+        input:focus, textarea:focus {
+            outline: 2px solid rgba(29, 185, 84, 0.6);
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 1rem;
+        }
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        input[type="range"] {
+            flex: 1;
+        }
+        button {
+            cursor: pointer;
+            background: linear-gradient(135deg, #1db954, #1ed760);
+            color: #000;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 0 20px 35px rgba(29, 185, 84, 0.35);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 40px rgba(29, 185, 84, 0.45);
+        }
+        .results {
+            margin-top: 2.5rem;
+            display: grid;
+            gap: 1.5rem;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 18px;
+            padding: 1.5rem;
+        }
+        .card h3 {
+            margin: 0 0 0.6rem;
+            font-size: 1.1rem;
+        }
+        .primary-mood {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        .accent {
+            color: #1db954;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin: 0.2rem;
+            padding: 0.45rem 0.8rem;
+            border-radius: 999px;
+            background: rgba(29, 185, 84, 0.12);
+            border: 1px solid rgba(29, 185, 84, 0.35);
+            font-size: 0.9rem;
+        }
+        .tracklist {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .track {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.2);
+        }
+        .track span:first-child {
+            font-weight: 600;
+        }
+        .error {
+            color: #ff7b72;
+            margin-top: 0.4rem;
+        }
+        .success {
+            color: #7ce39f;
+        }
+        @media (max-width: 600px) {
+            .surface {
+                padding: 1.5rem;
+            }
+            .hero h2 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="nav">
+            <h1>MoodMix</h1>
+            <span class="badge">AI Curated</span>
+        </header>
+        <section class="surface">
+            <div class="hero">
+                <h2>Channel how you feel. We’ll spin the soundtrack.</h2>
+                <p>Describe the vibe, choose your session length, and let the recommender craft a Spotify-style mix tailored to your mood.</p>
+            </div>
+            <form id="recommendation-form">
+                <div>
+                    <label for="textInput">Describe your vibe</label>
+                    <textarea id="textInput" placeholder="Example: 'Need chill beats to finish late-night design work'"></textarea>
+                </div>
+                <div class="controls">
+                    <div>
+                        <label for="timeOfDay">Current time</label>
+                        <input type="datetime-local" id="timeOfDay">
+                    </div>
+                    <div>
+                        <label for="playlistLength">Session length (minutes)</label>
+                        <div class="slider-group">
+                            <input type="range" id="playlistLength" min="15" max="90" step="5" value="30">
+                            <span id="playlistLengthValue">30 min</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="userId">User ID (optional)</label>
+                        <input id="userId" placeholder="e.g., arnep42">
+                    </div>
+                </div>
+                <div>
+                    <label for="searchTags">Recent search tags</label>
+                    <input id="searchTags" placeholder="study, sunsets, synthwave">
+                </div>
+                <button type="submit">Generate My Mix</button>
+                <div id="status" class="error" hidden></div>
+            </form>
+
+            <div class="results" id="results" hidden>
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>Mood Insight</h3>
+                        <div class="primary-mood" id="primaryMood"></div>
+                        <div id="moodDistribution"></div>
+                    </div>
+                    <div class="card">
+                        <h3>Featured Playlist</h3>
+                        <p id="playlistName" class="accent"></p>
+                        <div id="songList" class="tracklist"></div>
+                    </div>
+                    <div class="card">
+                        <h3>Recommended Vibes</h3>
+                        <div id="categoryList"></div>
+                        <p id="reasoning"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const DEFAULT_TYPING_SPEED = 3.0;
+        const playlistLengthInput = document.getElementById("playlistLength");
+        const playlistLengthValue = document.getElementById("playlistLengthValue");
+        playlistLengthInput.addEventListener("input", () => {
+            playlistLengthValue.textContent = `${playlistLengthInput.value} min`;
+        });
+
+        const setDefaultTime = () => {
+            const now = new Date();
+            const iso = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+                .toISOString()
+                .slice(0, 16);
+            document.getElementById("timeOfDay").value = iso;
+        };
+        setDefaultTime();
+
+        document.getElementById("recommendation-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const status = document.getElementById("status");
+            const results = document.getElementById("results");
+            status.hidden = true;
+            status.textContent = "";
+            results.hidden = true;
+
+            const payload = {
+                textInput: document.getElementById("textInput").value.trim(),
+                typingSpeed: DEFAULT_TYPING_SPEED,
+                timeOfDay: new Date(document.getElementById("timeOfDay").value).toISOString(),
+                searchHistoryTags: document.getElementById("searchTags").value
+                    .split(",")
+                    .map(tag => tag.trim())
+                    .filter(Boolean)
+            };
+
+            if (!payload.textInput) {
+                status.hidden = false;
+                status.textContent = "Please describe what you're doing or how you feel.";
+                return;
+            }
+
+            status.hidden = false;
+            status.classList.remove("success");
+            status.textContent = "Contacting recommendation engine...";
+
+            const params = new URLSearchParams();
+            if (document.getElementById("userId").value.trim()) {
+                params.set("userId", document.getElementById("userId").value.trim());
+            }
+            params.set("playlistLengthMinutes", playlistLengthInput.value);
+
+            try {
+                const response = await fetch(`/api/recommendations?${params.toString()}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server responded ${response.status}`);
+                }
+
+                const data = await response.json();
+                status.textContent = "Recommendations ready!";
+                status.classList.add("success");
+
+                document.getElementById("primaryMood").textContent =
+                    `Mood: ${data.moodScore?.primaryMood ?? "Unknown"} (${Math.round((data.moodScore?.confidence ?? 0) * 100)}% confidence)`;
+
+                document.getElementById("moodDistribution").innerHTML = Object.entries(data.moodScore?.moodDistribution ?? {})
+                    .map(([mood, value]) => `<span class="pill">${mood}: ${(value * 100).toFixed(0)}%</span>`)
+                    .join("") || "<p>No distribution available.</p>";
+
+                document.getElementById("playlistName").textContent =
+                    data.playlist?.playlistName ? `${data.playlist.playlistName} • ${data.playlist.mood ?? ""}` : "No playlist generated";
+
+                document.getElementById("songList").innerHTML = (data.playlist?.songs ?? [])
+                    .map((song, index) => `
+                        <div class="track">
+                            <span>${String(index + 1).padStart(2, "0")}. ${song.title}</span>
+                            <span>${song.artist}</span>
+                        </div>
+                    `)
+                    .join("") || "<p>No songs returned.</p>";
+
+                const categories = data.recommendedCategories ?? [];
+                document.getElementById("categoryList").innerHTML = categories.length
+                    ? categories.map(category => {
+                        const relevance = ((category.relevanceScore ?? 0) * 100).toFixed(0);
+                        return `<div class="pill">${category.categoryName} • ${relevance}%</div>`;
+                    }).join("")
+                    : "<p>No categories returned.</p>";
+
+                document.getElementById("reasoning").textContent = data.reasoning
+                    ? `Reason: ${data.reasoning}`
+                    : "";
+                results.hidden = false;
+            } catch (error) {
+                console.error(error);
+                status.classList.remove("success");
+                status.textContent = `Failed to get recommendations: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
+
